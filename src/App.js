@@ -50,11 +50,15 @@ function App() {
       setResult('');
       setError(null);
 
-      const response = await axios.post('/transcribe/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+  const response = await axios.post(
+  'https://whisper-api-app-2025.azurewebsites.net/transcribe/',
+  formData,
+  {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }
+);
 
       setResult(response.data.text || 'No result returned.');
     } catch (err) {
