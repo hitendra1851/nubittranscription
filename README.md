@@ -1,70 +1,139 @@
-# Getting Started with Create React App
+# NubitTranscribe.AI
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Transform your audio and video content into accurate text with our AI-powered transcription service. Fast, secure, and reliable transcription supporting 40+ languages.
 
-## Available Scripts
+## 🚀 Features
 
-In the project directory, you can run:
+- **Lightning Fast**: Get transcriptions in seconds
+- **Highly Accurate**: 95%+ accuracy with advanced AI models
+- **Secure & Private**: Files encrypted in transit, never stored
+- **Multi-language**: Support for 40+ languages
+- **AI Analysis**: Topic modeling, key moments, and anomaly detection
+- **Multiple Formats**: Support for MP3, WAV, MP4, MOV, AVI, and more
 
-### `npm start`
+## 🛠️ Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend**: React 19, Tailwind CSS
+- **API**: Whisper API for transcription
+- **AI Analysis**: Anthropic Claude API
+- **Deployment**: Azure Static Web Apps
+- **Styling**: Modern gradient design with animations
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📦 Installation
 
-### `npm test`
+1. Clone the repository:
+```bash
+git clone https://github.com/your-username/nubittranscribe-ai.git
+cd nubittranscribe-ai
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Install dependencies:
+```bash
+npm install
+```
 
-### `npm run build`
+3. Create environment file:
+```bash
+cp .env.example .env.local
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+4. Add your Anthropic API key to `.env.local`:
+```bash
+REACT_APP_ANTHROPIC_API_KEY=your_api_key_here
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+5. Start the development server:
+```bash
+npm start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🌐 Live Demo
 
-### `npm run eject`
+Visit [NubitTranscribe.AI](https://nubittranscribe.ai) to try the live application.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 📖 API Documentation
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The application includes comprehensive API documentation accessible at `/api-docs` with:
+- Complete endpoint reference
+- Code examples in multiple languages
+- Authentication details
+- Error handling guide
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🔧 Configuration
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Environment Variables
 
-## Learn More
+- `REACT_APP_ANTHROPIC_API_KEY`: Your Anthropic API key for AI analysis features
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### API Endpoints
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- **Transcription**: `https://whisper-api-app-2025.azurewebsites.net/transcribe/`
+- **Supported formats**: MP3, WAV, FLAC, M4A, AAC, OGG, WMA, MP4, AVI, MOV, MKV, FLV, WEBM
 
-### Code Splitting
+## 🚀 Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+The project is configured for Azure Static Web Apps but can be deployed to any static hosting service:
 
-### Analyzing the Bundle Size
+### Azure Static Web Apps
+The repository includes GitHub Actions workflow for automatic deployment.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Other Platforms
+- **Netlify**: Connect repository, set build command to `npm run build`
+- **Vercel**: Auto-detects React configuration
+- **GitHub Pages**: Build and deploy to `gh-pages` branch
 
-### Making a Progressive Web App
+## 📱 Pages
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- **Home**: Main transcription interface
+- **About**: Company information and mission
+- **Pricing**: Subscription plans and features
+- **API Docs**: Complete API documentation
+- **Contact**: Contact form and information
+- **Terms**: Terms of service
+- **Privacy**: Privacy policy
 
-### Advanced Configuration
+## 🎨 Design Features
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- Modern gradient design
+- Responsive layout for all devices
+- Smooth animations and micro-interactions
+- Apple-level design aesthetics
+- Accessible color contrast
+- Professional typography
 
-### Deployment
+## 🔒 Security
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Files encrypted in transit
+- No file storage on servers
+- Environment variables for sensitive data
+- HTTPS enforcement
+- Privacy-first approach
 
-### `npm run build` fails to minify
+## 🤝 Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Support
+
+- Email: contact@nubitsaitech.com
+- Documentation: [API Docs](https://nubittranscribe.ai/api-docs)
+- Issues: [GitHub Issues](https://github.com/your-username/nubittranscribe-ai/issues)
+
+## 🏢 Company
+
+**Nubits.AI Technology LLP**
+- Website: [nubittranscribe.ai](https://nubittranscribe.ai)
+- Email: contact@nubitsaitech.com
+- Location: San Francisco, CA
+
+---
+
+Built with ❤️ by the Nubits.AI team
