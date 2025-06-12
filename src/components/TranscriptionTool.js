@@ -22,7 +22,8 @@ const TranscriptionTool = () => {
     console.log('Environment check:', {
       hasApiKey: !!anthropicApiKey,
       apiKeyLength: anthropicApiKey ? anthropicApiKey.length : 0,
-      apiKeyPreview: anthropicApiKey ? `${anthropicApiKey.substring(0, 10)}...` : 'Not found'
+      apiKeyPreview: anthropicApiKey ? `${anthropicApiKey.substring(0, 10)}...` : 'Not found',
+      isProduction: process.env.NODE_ENV === 'production'
     });
 
     if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
@@ -70,7 +71,7 @@ const TranscriptionTool = () => {
 
   const analyzeTranscription = async (transcriptionText) => {
     if (apiKeyStatus !== 'valid') {
-      setAnalysis('Please add a valid Anthropic API key to enable AI analysis.');
+      setAnalysis('AI Analysis is not available in this deployment. Please configure the Anthropic API key in your environment variables to enable this feature.');
       return;
     }
 
@@ -103,10 +104,12 @@ Provide the response in structured format (JSON or bullet points).`;
     } catch (err) {
       console.error('Analysis failed:', err);
       if (err.message.includes('401') || err.message.includes('authentication')) {
-        setAnalysis('Authentication failed. Please check your Anthropic API key and try again.');
+        setAnalysis('Authentication failed. The API key is not properly configured for this deployment. Please contact the administrator to set up the Anthropic API key.');
         setApiKeyStatus('invalid');
+      } else if (err.message.includes('network') || err.message.includes('fetch')) {
+        setAnalysis('Network error occurred. Please check your internet connection and try again.');
       } else {
-        setAnalysis(`Analysis failed: ${err.message}. Please try again.`);
+        setAnalysis(`Analysis failed: ${err.message}. Please try again later.`);
       }
     } finally {
       setAnalysisLoading(false);
@@ -153,7 +156,7 @@ Provide the response in structured format (JSON or bullet points).`;
       const transcriptionResult = response.data.text || 'No result returned.';
       setResult(transcriptionResult);
       
-      // Automatically analyze the transcription if API key is valid
+      // Only attempt analysis if API key is valid and transcription was successful
       if (transcriptionResult && transcriptionResult !== 'No result returned.' && apiKeyStatus === 'valid') {
         await analyzeTranscription(transcriptionResult);
       }
@@ -228,9 +231,9 @@ Provide the response in structured format (JSON or bullet points).`;
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <div>
-                <p className="text-red-800 font-medium">Invalid API Key</p>
+                <p className="text-red-800 font-medium">API Configuration Error</p>
                 <p className="text-red-700 text-sm mt-1">
-                  The API key format is incorrect. Please ensure it starts with "sk-ant-" and try again.
+                  The API key is not properly configured for this deployment. Contact the administrator to enable AI analysis features.
                 </p>
               </div>
             </div>
@@ -245,19 +248,21 @@ Provide the response in structured format (JSON or bullet points).`;
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <p className="text-blue-800 font-medium">Ready for AI Analysis</p>
+                <p className="text-blue-800 font-medium">AI Analysis Not Available</p>
                 <p className="text-blue-700 text-sm mt-1">
-                  To enable AI-powered analysis, please add your Anthropic API key to the <code className="bg-blue-200 px-1 rounded">.env.local</code> file.
-                  The analysis will provide topic modeling, key moments identification, and anomaly detection.
+                  AI analysis features are not configured for this deployment. The transcription service will work normally, 
+                  but advanced AI analysis requires additional setup.
                 </p>
-                <div className="mt-3 p-3 bg-blue-100 rounded text-xs">
-                  <p className="font-medium text-blue-800">Steps to enable:</p>
-                  <ol className="text-blue-700 mt-1 list-decimal list-inside">
-                    <li>Get your API key from <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="underline">console.anthropic.com</a></li>
-                    <li>Replace "your_anthropic_api_key_here" in .env.local with your actual key</li>
-                    <li>Restart the development server</li>
-                  </ol>
-                </div>
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="mt-3 p-3 bg-blue-100 rounded text-xs">
+                    <p className="font-medium text-blue-800">For developers:</p>
+                    <ol className="text-blue-700 mt-1 list-decimal list-inside">
+                      <li>Get your API key from <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="underline">console.anthropic.com</a></li>
+                      <li>Add REACT_APP_ANTHROPIC_API_KEY to your environment variables</li>
+                      <li>Restart the development server</li>
+                    </ol>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -469,7 +474,7 @@ Provide the response in structured format (JSON or bullet points).`;
                 <div className="bg-gray-50 rounded-lg p-6 text-center">
                   <div className="inline-flex items-center space-x-3">
                     <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-gray-600">Analyzing transcription with Claude...</span>
+                    <span className="text-gray-600">Analyzing transcription with AI...</span>
                   </div>
                 </div>
               ) : analysis ? (
