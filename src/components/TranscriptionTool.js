@@ -66,7 +66,7 @@ const TranscriptionTool = () => {
       }, 500);
 
       const response = await axios.post(
-        'https://whisper-api-app-2025.azurewebsites.net/transcribe/',
+        '/transcribe/',
         formData,
         {
           headers: {
