@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -12,9 +12,27 @@ const TranscriptionTool = () => {
   const [progress, setProgress] = useState(0);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('transcript');
+  const [apiKeyStatus, setApiKeyStatus] = useState('checking');
 
   // Get API key from environment variables
   const anthropicApiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
+
+  // Check API key status on component mount
+  useEffect(() => {
+    console.log('Environment check:', {
+      hasApiKey: !!anthropicApiKey,
+      apiKeyLength: anthropicApiKey ? anthropicApiKey.length : 0,
+      apiKeyPreview: anthropicApiKey ? `${anthropicApiKey.substring(0, 10)}...` : 'Not found'
+    });
+
+    if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
+      setApiKeyStatus('missing');
+    } else if (anthropicApiKey.startsWith('sk-ant-')) {
+      setApiKeyStatus('valid');
+    } else {
+      setApiKeyStatus('invalid');
+    }
+  }, [anthropicApiKey]);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -51,8 +69,8 @@ const TranscriptionTool = () => {
   };
 
   const analyzeTranscription = async (transcriptionText) => {
-    if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
-      setAnalysis('Please add your Anthropic API key to the .env.local file as REACT_APP_ANTHROPIC_API_KEY to enable AI analysis.');
+    if (apiKeyStatus !== 'valid') {
+      setAnalysis('Please add a valid Anthropic API key to enable AI analysis.');
       return;
     }
 
@@ -84,7 +102,12 @@ Provide the response in structured format (JSON or bullet points).`;
       setAnalysis(msg.content[0].text);
     } catch (err) {
       console.error('Analysis failed:', err);
-      setAnalysis(`Analysis failed: ${err.message}. Please check your API key configuration and try again.`);
+      if (err.message.includes('401') || err.message.includes('authentication')) {
+        setAnalysis('Authentication failed. Please check your Anthropic API key and try again.');
+        setApiKeyStatus('invalid');
+      } else {
+        setAnalysis(`Analysis failed: ${err.message}. Please try again.`);
+      }
     } finally {
       setAnalysisLoading(false);
     }
@@ -130,8 +153,8 @@ Provide the response in structured format (JSON or bullet points).`;
       const transcriptionResult = response.data.text || 'No result returned.';
       setResult(transcriptionResult);
       
-      // Automatically analyze the transcription if API key is configured
-      if (transcriptionResult && transcriptionResult !== 'No result returned.' && anthropicApiKey && anthropicApiKey !== 'your_anthropic_api_key_here') {
+      // Automatically analyze the transcription if API key is valid
+      if (transcriptionResult && transcriptionResult !== 'No result returned.' && apiKeyStatus === 'valid') {
         await analyzeTranscription(transcriptionResult);
       }
     } catch (err) {
@@ -164,6 +187,82 @@ Provide the response in structured format (JSON or bullet points).`;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const renderApiKeyStatus = () => {
+    switch (apiKeyStatus) {
+      case 'checking':
+        return (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+              <div>
+                <p className="text-gray-800 font-medium">Checking API Configuration...</p>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'valid':
+        return (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+            <div className="flex items-center space-x-3">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-green-800 font-medium">AI Analysis Ready</p>
+                <p className="text-green-700 text-sm mt-1">
+                  Anthropic API key is configured correctly. Click "Analyze" to get AI-powered insights.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'invalid':
+        return (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="flex items-center space-x-3">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <div>
+                <p className="text-red-800 font-medium">Invalid API Key</p>
+                <p className="text-red-700 text-sm mt-1">
+                  The API key format is incorrect. Please ensure it starts with "sk-ant-" and try again.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      
+      default: // missing
+        return (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div className="flex items-center space-x-3">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-blue-800 font-medium">Ready for AI Analysis</p>
+                <p className="text-blue-700 text-sm mt-1">
+                  To enable AI-powered analysis, please add your Anthropic API key to the <code className="bg-blue-200 px-1 rounded">.env.local</code> file.
+                  The analysis will provide topic modeling, key moments identification, and anomaly detection.
+                </p>
+                <div className="mt-3 p-3 bg-blue-100 rounded text-xs">
+                  <p className="font-medium text-blue-800">Steps to enable:</p>
+                  <ol className="text-blue-700 mt-1 list-decimal list-inside">
+                    <li>Get your API key from <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="underline">console.anthropic.com</a></li>
+                    <li>Replace "your_anthropic_api_key_here" in .env.local with your actual key</li>
+                    <li>Restart the development server</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+    }
   };
 
   return (
@@ -352,7 +451,7 @@ Provide the response in structured format (JSON or bullet points).`;
                     </svg>
                     <span>Download</span>
                   </button>
-                  {!analysisLoading && !analysis && anthropicApiKey && anthropicApiKey !== 'your_anthropic_api_key_here' && (
+                  {!analysisLoading && !analysis && apiKeyStatus === 'valid' && (
                     <button
                       onClick={() => analyzeTranscription(result)}
                       className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
@@ -377,44 +476,8 @@ Provide the response in structured format (JSON or bullet points).`;
                 <div className="bg-gray-50 rounded-lg p-6 max-h-96 overflow-y-auto">
                   <pre className="text-gray-800 leading-relaxed whitespace-pre-wrap font-sans">{analysis}</pre>
                 </div>
-              ) : (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                  <div className="flex items-center space-x-3">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                      <p className="text-blue-800 font-medium">Ready for AI Analysis</p>
-                      <p className="text-blue-700 text-sm mt-1">
-                        To enable AI-powered analysis, please add your Anthropic API key to the <code className="bg-blue-200 px-1 rounded">.env.local</code> file.
-                        The analysis will provide topic modeling, key moments identification, and anomaly detection.
-                      </p>
-                      <div className="mt-3 p-3 bg-blue-100 rounded text-xs">
-                        <p className="font-medium text-blue-800">Steps to enable:</p>
-                        <ol className="text-blue-700 mt-1 list-decimal list-inside">
-                          <li>Get your API key from <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="underline">console.anthropic.com</a></li>
-                          <li>Replace "your_anthropic_api_key_here" in .env.local with your actual key</li>
-                          <li>Restart the development server</li>
-                        </ol>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               ) : (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                  <div className="flex items-center space-x-3">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                      <p className="text-blue-800 font-medium">Ready for Analysis</p>
-                      <p className="text-blue-700 text-sm mt-1">
-                        Click the "Analyze" button above to get AI-powered insights including topic modeling, 
-                        key moments identification, and anomaly detection.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                renderApiKeyStatus()
               )}
             </>
           )}
