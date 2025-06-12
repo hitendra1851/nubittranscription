@@ -13,6 +13,7 @@ const TranscriptionTool = () => {
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('transcript');
   const [apiKeyStatus, setApiKeyStatus] = useState('checking');
+  const [apiKeyTested, setApiKeyTested] = useState(false);
 
   // Get API key from environment variables
   const anthropicApiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
@@ -28,14 +29,13 @@ const TranscriptionTool = () => {
       nodeEnv: process.env.NODE_ENV
     });
 
-    // In production, be more lenient about API key validation
     if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
       setApiKeyStatus('missing');
     } else if (anthropicApiKey.startsWith('sk-ant-')) {
-      setApiKeyStatus('valid');
+      // Don't assume it's valid until we test it
+      setApiKeyStatus('untested');
     } else {
-      // In production, still try to use the key even if format seems wrong
-      setApiKeyStatus(isProduction ? 'valid' : 'invalid');
+      setApiKeyStatus('invalid');
     }
   }, [anthropicApiKey, isProduction]);
 
@@ -73,14 +73,56 @@ const TranscriptionTool = () => {
     setDragActive(false);
   };
 
+  const testApiKey = async () => {
+    if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
+      return false;
+    }
+
+    try {
+      const anthropic = new Anthropic({
+        apiKey: anthropicApiKey,
+        dangerouslyAllowBrowser: true
+      });
+
+      // Test with a minimal request
+      await anthropic.messages.create({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 10,
+        messages: [{ role: "user", content: "Hi" }],
+      });
+
+      return true;
+    } catch (err) {
+      console.error('API key test failed:', err);
+      return false;
+    }
+  };
+
   const analyzeTranscription = async (transcriptionText) => {
-    if (apiKeyStatus !== 'valid') {
-      setAnalysis('AI Analysis is not available in this deployment. The transcription service works perfectly without this feature.');
+    // First check if we have an API key
+    if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
+      setAnalysis('AI Analysis requires an API key configuration. The transcription feature works independently and provides accurate text conversion.');
       return;
     }
 
-    if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
-      setAnalysis('AI Analysis requires an API key configuration. The transcription feature works independently.');
+    // If we haven't tested the API key yet, test it first
+    if (!apiKeyTested && apiKeyStatus === 'untested') {
+      setAnalysisLoading(true);
+      const isValid = await testApiKey();
+      setApiKeyTested(true);
+      
+      if (!isValid) {
+        setApiKeyStatus('invalid');
+        setAnalysisLoading(false);
+        setAnalysis('AI Analysis is unavailable: The API key appears to be invalid or expired. Please check your Anthropic API key configuration. Your transcription is complete and ready to use.');
+        return;
+      } else {
+        setApiKeyStatus('valid');
+      }
+    }
+
+    if (apiKeyStatus === 'invalid') {
+      setAnalysis('AI Analysis is unavailable: Invalid or expired API key. Your transcription is complete and ready to use.');
       return;
     }
 
@@ -110,17 +152,19 @@ Provide the response in structured format (JSON or bullet points).`;
       });
 
       setAnalysis(msg.content[0].text);
+      setApiKeyStatus('valid');
     } catch (err) {
       console.error('Analysis failed:', err);
       
       // More specific error handling
       if (err.message.includes('401') || err.message.includes('authentication') || err.message.includes('invalid x-api-key')) {
-        setAnalysis('AI Analysis is not available: Authentication failed. This feature requires proper API key configuration in the deployment environment. The transcription service continues to work normally.');
+        setAnalysis('AI Analysis is unavailable: The API key is invalid or expired. Please verify your Anthropic API key. Your transcription is complete and ready to use.');
         setApiKeyStatus('invalid');
+        setApiKeyTested(true);
+      } else if (err.message.includes('429') || err.message.includes('rate_limit')) {
+        setAnalysis('AI Analysis temporarily unavailable: Rate limit exceeded. Please try again in a few minutes. Your transcription is complete and ready to use.');
       } else if (err.message.includes('network') || err.message.includes('fetch')) {
-        setAnalysis('AI Analysis temporarily unavailable due to network issues. Please try again later. Your transcription is complete and ready to use.');
-      } else if (err.message.includes('rate_limit')) {
-        setAnalysis('AI Analysis temporarily unavailable due to rate limits. Please try again in a few minutes. Your transcription is complete and ready to use.');
+        setAnalysis('AI Analysis temporarily unavailable: Network connection issue. Please check your internet connection and try again. Your transcription is complete and ready to use.');
       } else {
         setAnalysis(`AI Analysis encountered an error: ${err.message}. Your transcription is complete and ready to use.`);
       }
@@ -169,11 +213,8 @@ Provide the response in structured format (JSON or bullet points).`;
       const transcriptionResult = response.data.text || 'No result returned.';
       setResult(transcriptionResult);
       
-      // Only attempt analysis if API key is valid and transcription was successful
-      // Don't auto-analyze in production to avoid unnecessary API calls
-      if (transcriptionResult && transcriptionResult !== 'No result returned.' && apiKeyStatus === 'valid' && !isProduction) {
-        await analyzeTranscription(transcriptionResult);
-      }
+      // Don't auto-analyze in production to avoid unnecessary API calls that might fail
+      // Users can manually trigger analysis if they want
     } catch (err) {
       setError('Transcription failed. Please try again.');
       console.error(err);
@@ -239,15 +280,32 @@ Provide the response in structured format (JSON or bullet points).`;
       
       case 'invalid':
         return (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <div className="flex items-center space-x-3">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <div>
-                <p className="text-yellow-800 font-medium">AI Analysis Unavailable</p>
-                <p className="text-yellow-700 text-sm mt-1">
-                  AI analysis features are not configured for this deployment. Your transcription works perfectly without this feature.
+                <p className="text-red-800 font-medium">AI Analysis Unavailable</p>
+                <p className="text-red-700 text-sm mt-1">
+                  The API key is invalid or expired. AI analysis features are not available, but transcription works perfectly.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'untested':
+        return (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div className="flex items-center space-x-3">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-blue-800 font-medium">AI Analysis Ready to Test</p>
+                <p className="text-blue-700 text-sm mt-1">
+                  Click "Analyze" to test the AI analysis feature. This will verify the API key and provide insights if available.
                 </p>
               </div>
             </div>
@@ -256,20 +314,20 @@ Provide the response in structured format (JSON or bullet points).`;
       
       default: // missing
         return (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <div className="flex items-center space-x-3">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <p className="text-blue-800 font-medium">AI Analysis Not Configured</p>
-                <p className="text-blue-700 text-sm mt-1">
+                <p className="text-yellow-800 font-medium">AI Analysis Not Configured</p>
+                <p className="text-yellow-700 text-sm mt-1">
                   AI analysis features are not available in this deployment. The core transcription service works perfectly and provides accurate text conversion.
                 </p>
                 {!isProduction && (
-                  <div className="mt-3 p-3 bg-blue-100 rounded text-xs">
-                    <p className="font-medium text-blue-800">For developers:</p>
-                    <ol className="text-blue-700 mt-1 list-decimal list-inside">
+                  <div className="mt-3 p-3 bg-yellow-100 rounded text-xs">
+                    <p className="font-medium text-yellow-800">For developers:</p>
+                    <ol className="text-yellow-700 mt-1 list-decimal list-inside">
                       <li>Get your API key from <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="underline">console.anthropic.com</a></li>
                       <li>Add REACT_APP_ANTHROPIC_API_KEY to your environment variables</li>
                       <li>Restart the development server</li>
@@ -469,7 +527,7 @@ Provide the response in structured format (JSON or bullet points).`;
                     </svg>
                     <span>Download</span>
                   </button>
-                  {!analysisLoading && !analysis && apiKeyStatus === 'valid' && (
+                  {!analysisLoading && !analysis && (apiKeyStatus === 'valid' || apiKeyStatus === 'untested') && (
                     <button
                       onClick={() => analyzeTranscription(result)}
                       className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
