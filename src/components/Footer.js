@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from './Logo';
 
 const Footer = () => {
   return (
@@ -8,11 +9,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">NT</span>
-              </div>
-              <span className="text-xl font-bold">NubitTranscribe.AI</span>
+            <div className="mb-4">
+              <Logo className="w-8 h-8" textClassName="text-xl text-white" />
             </div>
             <p className="text-gray-400 mb-4 max-w-md">
               Transform your audio and video content into accurate text with our AI-powered transcription service. 
