@@ -138,7 +138,7 @@ axios.post('https://whisper-api-app-2025.azurewebsites.net/transcribe/', form, {
 
                   <p className="text-gray-600 mb-6">
                     The NubitTranscribe.AI API provides a simple REST interface for converting audio and video files 
-                    into accurate text transcriptions. Built on OpenAI's Whisper model, our API supports over 40 languages 
+                    into accurate text transcriptions. Built on advanced AI models, our API supports over 40 languages 
                     and various audio/video formats.
                   </p>
 

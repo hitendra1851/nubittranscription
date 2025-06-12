@@ -30,7 +30,7 @@ const About = () => {
               accessible to hearing-impaired students. There had to be a better way.
             </p>
             <p className="text-gray-600 mb-6">
-              Leveraging OpenAI's groundbreaking Whisper model, we built a platform that doesn't just 
+              Leveraging advanced AI models and cutting-edge speech recognition technology, we built a platform that doesn't just 
               transcribe audio—it understands context, handles multiple speakers, and works across 
               dozens of languages with unprecedented accuracy.
             </p>

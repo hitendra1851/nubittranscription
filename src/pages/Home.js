@@ -19,7 +19,7 @@ const Home = () => {
         </svg>
       ),
       title: 'Highly Accurate',
-      description: 'Powered by OpenAI Whisper, achieving 95%+ accuracy across multiple languages and accents.'
+      description: 'Powered by advanced AI models, achieving 95%+ accuracy across multiple languages and accents.'
     },
     {
       icon: (
@@ -126,7 +126,7 @@ const Home = () => {
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> AI Precision</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Drop a file and get your transcript in seconds. Powered by OpenAI Whisper for unmatched accuracy across 40+ languages.
+              Drop a file and get your transcript in seconds. Powered by advanced AI for unmatched accuracy across 40+ languages.
             </p>
           </div>
           
