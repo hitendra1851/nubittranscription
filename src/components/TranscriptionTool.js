@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Anthropic from '@anthropic-ai/sdk';
-import { performFallbackAnalysis } from '../utils/fallbackAnalysis';
 
 const TranscriptionTool = () => {
   const [file, setFile] = useState(null);
@@ -15,7 +14,6 @@ const TranscriptionTool = () => {
   const [activeTab, setActiveTab] = useState('transcript');
   const [apiKeyStatus, setApiKeyStatus] = useState('checking');
   const [apiKeyTested, setApiKeyTested] = useState(false);
-  const [analysisType, setAnalysisType] = useState('ai'); // 'ai' or 'basic'
 
   // Get API key from environment variables
   const anthropicApiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
@@ -34,7 +32,6 @@ const TranscriptionTool = () => {
     if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
       setApiKeyStatus('missing');
     } else if (anthropicApiKey.startsWith('sk-ant-')) {
-      // Don't assume it's valid until we test it
       setApiKeyStatus('untested');
     } else {
       setApiKeyStatus('invalid');
@@ -100,62 +97,9 @@ const TranscriptionTool = () => {
     }
   };
 
-  const performBasicAnalysis = (transcriptionText) => {
-    try {
-      setAnalysisLoading(true);
-      setAnalysisType('basic');
-      
-      const analysisResult = performFallbackAnalysis(transcriptionText);
-      
-      // Format the analysis result for display
-      const formattedAnalysis = `
-# Basic Text Analysis Report
-
-## Summary
-${analysisResult.summary}
-
-## Topic Analysis
-**Sentiment:** ${analysisResult.topicModeling.sentiment}
-
-**Top Keywords:**
-${analysisResult.topicModeling.keywords.map(k => `• ${k.word} (${k.count} times)`).join('\n')}
-
-## Key Moments
-${analysisResult.keyMoments.length > 0 
-  ? analysisResult.keyMoments.map((moment, i) => `${i + 1}. ${moment.text}`).join('\n\n')
-  : 'No significant key moments detected.'
-}
-
-## Potential Anomalies
-${analysisResult.anomalies.length > 0 
-  ? analysisResult.anomalies.map(anomaly => `• ${anomaly.type}: ${anomaly.description}`).join('\n')
-  : 'No anomalies detected.'
-}
-
-## Statistics
-• **Words:** ${analysisResult.statistics.wordCount}
-• **Sentences:** ${analysisResult.statistics.sentenceCount}
-• **Paragraphs:** ${analysisResult.statistics.paragraphCount}
-• **Average words per sentence:** ${analysisResult.statistics.avgWordsPerSentence}
-• **Estimated reading time:** ${analysisResult.statistics.estimatedReadingTime} minutes
-
----
-${analysisResult.note}
-      `;
-      
-      setAnalysis(formattedAnalysis);
-    } catch (err) {
-      console.error('Basic analysis failed:', err);
-      setAnalysis('Basic analysis encountered an error. Please try again.');
-    } finally {
-      setAnalysisLoading(false);
-    }
-  };
-
-  const analyzeTranscription = async (transcriptionText, forceBasic = false) => {
-    // If forced to use basic analysis or no API key available
-    if (forceBasic || !anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
-      performBasicAnalysis(transcriptionText);
+  const analyzeTranscription = async (transcriptionText) => {
+    if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
+      setAnalysis('Please add a valid Anthropic API key to enable AI analysis.');
       return;
     }
 
@@ -168,8 +112,7 @@ ${analysisResult.note}
       if (!isValid) {
         setApiKeyStatus('invalid');
         setAnalysisLoading(false);
-        // Fall back to basic analysis
-        performBasicAnalysis(transcriptionText);
+        setAnalysis('Authentication failed. Please check your Anthropic API key and try again.');
         return;
       } else {
         setApiKeyStatus('valid');
@@ -177,14 +120,12 @@ ${analysisResult.note}
     }
 
     if (apiKeyStatus === 'invalid') {
-      // Fall back to basic analysis
-      performBasicAnalysis(transcriptionText);
+      setAnalysis('Authentication failed. Please check your Anthropic API key and try again.');
       return;
     }
 
     try {
       setAnalysisLoading(true);
-      setAnalysisType('ai');
       
       const anthropic = new Anthropic({
         apiKey: anthropicApiKey,
@@ -213,21 +154,16 @@ Provide the response in structured format (JSON or bullet points).`;
     } catch (err) {
       console.error('Analysis failed:', err);
       
-      // More specific error handling - fall back to basic analysis
       if (err.message.includes('401') || err.message.includes('authentication') || err.message.includes('invalid x-api-key')) {
         setApiKeyStatus('invalid');
         setApiKeyTested(true);
-        // Fall back to basic analysis
-        performBasicAnalysis(transcriptionText);
+        setAnalysis('Authentication failed. Please check your Anthropic API key and try again.');
       } else if (err.message.includes('429') || err.message.includes('rate_limit')) {
-        setAnalysis('AI Analysis temporarily unavailable: Rate limit exceeded. Falling back to basic analysis...');
-        setTimeout(() => performBasicAnalysis(transcriptionText), 1000);
+        setAnalysis('AI Analysis temporarily unavailable: Rate limit exceeded. Please try again later.');
       } else if (err.message.includes('network') || err.message.includes('fetch')) {
-        setAnalysis('AI Analysis temporarily unavailable: Network connection issue. Falling back to basic analysis...');
-        setTimeout(() => performBasicAnalysis(transcriptionText), 1000);
+        setAnalysis('AI Analysis temporarily unavailable: Network connection issue. Please try again.');
       } else {
-        setAnalysis(`AI Analysis encountered an error. Falling back to basic analysis...`);
-        setTimeout(() => performBasicAnalysis(transcriptionText), 1000);
+        setAnalysis(`Analysis failed: ${err.message}. Please try again.`);
       }
     } finally {
       setAnalysisLoading(false);
@@ -273,9 +209,6 @@ Provide the response in structured format (JSON or bullet points).`;
       setProgress(100);
       const transcriptionResult = response.data.text || 'No result returned.';
       setResult(transcriptionResult);
-      
-      // Don't auto-analyze in production to avoid unnecessary API calls that might fail
-      // Users can manually trigger analysis if they want
     } catch (err) {
       setError('Transcription failed. Please try again.');
       console.error(err);
@@ -332,7 +265,7 @@ Provide the response in structured format (JSON or bullet points).`;
               <div>
                 <p className="text-green-800 font-medium">AI Analysis Available</p>
                 <p className="text-green-700 text-sm mt-1">
-                  Click "AI Analysis" below to get advanced AI-powered insights including topic modeling, key moments, and anomaly detection.
+                  Click "Analyze" below to get AI-powered insights including topic modeling, key moments, and anomaly detection.
                 </p>
               </div>
             </div>
@@ -341,15 +274,15 @@ Provide the response in structured format (JSON or bullet points).`;
       
       case 'invalid':
         return (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <div className="flex items-center space-x-3">
-              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <div>
-                <p className="text-orange-800 font-medium">AI Analysis Unavailable - Using Basic Analysis</p>
-                <p className="text-orange-700 text-sm mt-1">
-                  Advanced AI features are not available, but you can still get basic text analysis including keyword extraction, sentiment analysis, and statistics.
+                <p className="text-red-800 font-medium">Invalid API Key</p>
+                <p className="text-red-700 text-sm mt-1">
+                  The API key is invalid or expired. Please check your Anthropic API key and try again.
                 </p>
               </div>
             </div>
@@ -366,7 +299,7 @@ Provide the response in structured format (JSON or bullet points).`;
               <div>
                 <p className="text-blue-800 font-medium">AI Analysis Ready to Test</p>
                 <p className="text-blue-700 text-sm mt-1">
-                  Click "AI Analysis" to test advanced features, or use "Basic Analysis" for immediate insights.
+                  Click "Analyze" to test AI-powered analysis features.
                 </p>
               </div>
             </div>
@@ -381,9 +314,9 @@ Provide the response in structured format (JSON or bullet points).`;
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <p className="text-yellow-800 font-medium">Basic Analysis Available</p>
+                <p className="text-yellow-800 font-medium">AI Analysis Not Available</p>
                 <p className="text-yellow-700 text-sm mt-1">
-                  Advanced AI features are not configured, but basic text analysis is available including keyword extraction, sentiment analysis, and content statistics.
+                  To enable AI-powered analysis, please add your Anthropic API key to the environment variables.
                 </p>
                 {!isProduction && (
                   <div className="mt-3 p-3 bg-yellow-100 rounded text-xs">
@@ -517,15 +450,9 @@ Provide the response in structured format (JSON or bullet points).`;
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                Analysis
+                AI Analysis
                 {analysisLoading && (
                   <span className="ml-2 inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></span>
-                )}
-                {analysisType === 'basic' && analysis && (
-                  <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Basic</span>
-                )}
-                {analysisType === 'ai' && analysis && (
-                  <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">AI</span>
                 )}
               </button>
             </div>
@@ -572,7 +499,7 @@ Provide the response in structured format (JSON or bullet points).`;
           {activeTab === 'analysis' && (
             <>
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">Text Analysis</h3>
+                <h3 className="text-2xl font-bold text-gray-900">AI Analysis</h3>
                 <div className="flex space-x-3">
                   <button
                     onClick={() => copyToClipboard(analysis)}
@@ -594,29 +521,16 @@ Provide the response in structured format (JSON or bullet points).`;
                     </svg>
                     <span>Download</span>
                   </button>
-                  {!analysisLoading && !analysis && (
-                    <div className="flex space-x-2">
-                      {(apiKeyStatus === 'valid' || apiKeyStatus === 'untested') && (
-                        <button
-                          onClick={() => analyzeTranscription(result, false)}
-                          className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                          </svg>
-                          <span>AI Analysis</span>
-                        </button>
-                      )}
-                      <button
-                        onClick={() => analyzeTranscription(result, true)}
-                        className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        <span>Basic Analysis</span>
-                      </button>
-                    </div>
+                  {!analysisLoading && !analysis && (apiKeyStatus === 'valid' || apiKeyStatus === 'untested') && (
+                    <button
+                      onClick={() => analyzeTranscription(result)}
+                      className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      <span>Analyze</span>
+                    </button>
                   )}
                 </div>
               </div>
@@ -625,7 +539,7 @@ Provide the response in structured format (JSON or bullet points).`;
                 <div className="bg-gray-50 rounded-lg p-6 text-center">
                   <div className="inline-flex items-center space-x-3">
                     <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-gray-600">Analyzing transcription...</span>
+                    <span className="text-gray-600">Analyzing transcription with AI...</span>
                   </div>
                 </div>
               ) : analysis ? (
