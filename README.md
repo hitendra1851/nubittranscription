@@ -1,4 +1,4 @@
-# NubitTranscribe.AI
+# TranscriptFlow
 
 Transform your audio and video content into accurate text with our AI-powered transcription service. Fast, secure, and reliable transcription supporting 40+ languages.
 
@@ -15,7 +15,7 @@ Transform your audio and video content into accurate text with our AI-powered tr
 
 - **Frontend**: React 19, Tailwind CSS
 - **API**: Whisper API for transcription
-- **AI Analysis**: Anthropic Claude API
+- **AI Analysis**: Advanced AI models for content analysis
 - **Deployment**: Azure Static Web Apps
 - **Styling**: Modern gradient design with animations
 
@@ -23,8 +23,8 @@ Transform your audio and video content into accurate text with our AI-powered tr
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/nubittranscribe-ai.git
-cd nubittranscribe-ai
+git clone https://github.com/your-username/transcriptflow.git
+cd transcriptflow
 ```
 
 2. Install dependencies:
@@ -32,24 +32,14 @@ cd nubittranscribe-ai
 npm install
 ```
 
-3. Create environment file:
-```bash
-cp .env.example .env.local
-```
-
-4. Add your Anthropic API key to `.env.local`:
-```bash
-REACT_APP_ANTHROPIC_API_KEY=your_api_key_here
-```
-
-5. Start the development server:
+3. Start the development server:
 ```bash
 npm start
 ```
 
 ## 🌐 Live Demo
 
-Visit [NubitTranscribe.AI](https://nubittranscribe.ai) to try the live application.
+Visit [TranscriptFlow](https://transcriptflow.ai) to try the live application.
 
 ## 📖 API Documentation
 
@@ -60,10 +50,6 @@ The application includes comprehensive API documentation accessible at `/api-doc
 - Error handling guide
 
 ## 🔧 Configuration
-
-### Environment Variables
-
-- `REACT_APP_ANTHROPIC_API_KEY`: Your Anthropic API key for AI analysis features
 
 ### API Endpoints
 
@@ -105,9 +91,8 @@ The repository includes GitHub Actions workflow for automatic deployment.
 
 - Files encrypted in transit
 - No file storage on servers
-- Environment variables for sensitive data
-- HTTPS enforcement
 - Privacy-first approach
+- HTTPS enforcement
 
 ## 🤝 Contributing
 
@@ -123,17 +108,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- Email: contact@nubitsaitech.com
-- Documentation: [API Docs](https://nubittranscribe.ai/api-docs)
-- Issues: [GitHub Issues](https://github.com/your-username/nubittranscribe-ai/issues)
+- Email: contact@transcriptflow.ai
+- Documentation: [API Docs](https://transcriptflow.ai/api-docs)
+- Issues: [GitHub Issues](https://github.com/your-username/transcriptflow/issues)
 
 ## 🏢 Company
 
-**Nubits.AI Technology LLP**
-- Website: [nubittranscribe.ai](https://nubittranscribe.ai)
-- Email: contact@nubitsaitech.com
+**TranscriptFlow**
+- Website: [transcriptflow.ai](https://transcriptflow.ai)
+- Email: contact@transcriptflow.ai
 - Location: San Francisco, CA
 
 ---
 
-Built with ❤️ by the Nubits.AI team
+Built with ❤️ by the TranscriptFlow team

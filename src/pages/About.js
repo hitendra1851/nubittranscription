@@ -6,7 +6,7 @@ const About = () => {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-50 to-purple-50 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">About NubitTranscribe.AI</h1>
+          <h1 className="text-5xl font-bold text-gray-900 mb-6">About TranscriptFlow</h1>
           <p className="text-xl text-gray-600 leading-relaxed">
             We're on a mission to make audio and video content accessible to everyone through 
             cutting-edge AI transcription technology.
@@ -20,7 +20,7 @@ const About = () => {
           <div className="prose prose-lg mx-auto">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
             <p className="text-gray-600 mb-6">
-              Founded in 2024 by a team of AI researchers and software engineers, NubitTranscribe.AI was born 
+              Founded in 2024 by a team of AI researchers and software engineers, TranscriptFlow was born 
               from a simple observation: despite the abundance of audio and video content in our digital world, 
               accessing and searching through this content remained frustratingly difficult.
             </p>

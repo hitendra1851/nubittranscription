@@ -19,14 +19,14 @@ const Terms = () => {
           <div className="prose prose-lg max-w-none">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Acceptance of Terms</h2>
             <p className="text-gray-600 mb-6">
-              By accessing and using NubitTranscribe.AI ("Service"), you accept and agree to be bound by the terms 
+              By accessing and using TranscriptFlow ("Service"), you accept and agree to be bound by the terms 
               and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Description of Service</h2>
             <p className="text-gray-600 mb-6">
-              NubitTranscribe.AI provides AI-powered transcription services that convert audio and video files into text. 
-              The service is provided by Nubits.AI Technology LLP and is subject to the terms outlined in this agreement.
+              TranscriptFlow provides AI-powered transcription services that convert audio and video files into text. 
+              The service is provided by TranscriptFlow and is subject to the terms outlined in this agreement.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4">3. User Accounts and Registration</h2>
@@ -61,7 +61,7 @@ const Terms = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">6. Intellectual Property Rights</h2>
             <p className="text-gray-600 mb-4">
               The Service and its original content, features, and functionality are and will remain the exclusive property 
-              of Nubits.AI Technology LLP and its licensors. The Service is protected by copyright, trademark, and other laws.
+              of TranscriptFlow and its licensors. The Service is protected by copyright, trademark, and other laws.
             </p>
             <p className="text-gray-600 mb-6">
               You retain ownership of any content you upload to our Service. By uploading content, you grant us a limited, 
@@ -88,7 +88,7 @@ const Terms = () => {
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Limitation of Liability</h2>
             <p className="text-gray-600 mb-6">
-              In no event shall Nubits.AI Technology LLP, nor its directors, employees, partners, agents, suppliers, 
+              In no event shall TranscriptFlow, nor its directors, employees, partners, agents, suppliers, 
               or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, 
               including without limitation, loss of profits, data, use, goodwill, or other intangible losses, 
               resulting from your use of the Service.
@@ -126,8 +126,8 @@ const Terms = () => {
               If you have any questions about these Terms of Service, please contact us at:
             </p>
             <div className="bg-gray-50 p-6 rounded-lg">
-              <p className="text-gray-800 font-medium">Nubits.AI Technology LLP</p>
-              <p className="text-gray-600">Email: legal@nubitsaitech.com</p>
+              <p className="text-gray-800 font-medium">TranscriptFlow</p>
+              <p className="text-gray-600">Email: legal@transcriptflow.ai</p>
               <p className="text-gray-600">Address: 123 Tech Street, San Francisco, CA 94105</p>
             </div>
           </div>

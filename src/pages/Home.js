@@ -69,7 +69,7 @@ const Home = () => {
       name: 'Sarah Johnson',
       role: 'Legal Assistant',
       company: 'Johnson & Associates',
-      content: 'NubitTranscribe.AI has revolutionized our workflow. What used to take hours now takes minutes.',
+      content: 'TranscriptFlow has revolutionized our workflow. What used to take hours now takes minutes.',
       avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
     },
     {
@@ -138,7 +138,7 @@ const Home = () => {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose NubitTranscribe.AI?</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose TranscriptFlow?</h2>
             <p className="text-xl text-gray-600">Built for professionals who demand accuracy, speed, and security</p>
           </div>
           
@@ -228,7 +228,7 @@ const Home = () => {
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-white mb-4">Ready to Get Started?</h2>
-          <p className="text-xl text-blue-100 mb-8">Join thousands of professionals who trust NubitTranscribe.AI</p>
+          <p className="text-xl text-blue-100 mb-8">Join thousands of professionals who trust TranscriptFlow</p>
           <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105">
             Start Transcribing Free
           </button>

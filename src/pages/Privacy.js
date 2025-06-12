@@ -20,7 +20,7 @@ const Privacy = () => {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
               <h3 className="text-lg font-semibold text-blue-900 mb-2">Our Privacy Commitment</h3>
               <p className="text-blue-800">
-                At NubitTranscribe.AI, we are committed to protecting your privacy. We do not store your audio files 
+                At TranscriptFlow, we are committed to protecting your privacy. We do not store your audio files 
                 or transcriptions on our servers. All processing is done in real-time, and your data is immediately 
                 deleted after transcription.
               </p>
@@ -166,8 +166,8 @@ const Privacy = () => {
               If you have any questions about this Privacy Policy or our data practices, please contact us:
             </p>
             <div className="bg-gray-50 p-6 rounded-lg">
-              <p className="text-gray-800 font-medium">Nubits.AI Technology LLP</p>
-              <p className="text-gray-600">Email: privacy@nubitsaitech.com</p>
+              <p className="text-gray-800 font-medium">TranscriptFlow</p>
+              <p className="text-gray-600">Email: privacy@transcriptflow.ai</p>
               <p className="text-gray-600">Address: 123 Tech Street, San Francisco, CA 94105</p>
               <p className="text-gray-600">Phone: +1 (555) 123-4567</p>
             </div>
