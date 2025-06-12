@@ -16,6 +16,7 @@ const TranscriptionTool = () => {
 
   // Get API key from environment variables
   const anthropicApiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
+  const isProduction = process.env.NODE_ENV === 'production';
 
   // Check API key status on component mount
   useEffect(() => {
@@ -23,17 +24,20 @@ const TranscriptionTool = () => {
       hasApiKey: !!anthropicApiKey,
       apiKeyLength: anthropicApiKey ? anthropicApiKey.length : 0,
       apiKeyPreview: anthropicApiKey ? `${anthropicApiKey.substring(0, 10)}...` : 'Not found',
-      isProduction: process.env.NODE_ENV === 'production'
+      isProduction: isProduction,
+      nodeEnv: process.env.NODE_ENV
     });
 
+    // In production, be more lenient about API key validation
     if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
       setApiKeyStatus('missing');
     } else if (anthropicApiKey.startsWith('sk-ant-')) {
       setApiKeyStatus('valid');
     } else {
-      setApiKeyStatus('invalid');
+      // In production, still try to use the key even if format seems wrong
+      setApiKeyStatus(isProduction ? 'valid' : 'invalid');
     }
-  }, [anthropicApiKey]);
+  }, [anthropicApiKey, isProduction]);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -71,7 +75,12 @@ const TranscriptionTool = () => {
 
   const analyzeTranscription = async (transcriptionText) => {
     if (apiKeyStatus !== 'valid') {
-      setAnalysis('AI Analysis is not available in this deployment. Please configure the Anthropic API key in your environment variables to enable this feature.');
+      setAnalysis('AI Analysis is not available in this deployment. The transcription service works perfectly without this feature.');
+      return;
+    }
+
+    if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
+      setAnalysis('AI Analysis requires an API key configuration. The transcription feature works independently.');
       return;
     }
 
@@ -103,13 +112,17 @@ Provide the response in structured format (JSON or bullet points).`;
       setAnalysis(msg.content[0].text);
     } catch (err) {
       console.error('Analysis failed:', err);
-      if (err.message.includes('401') || err.message.includes('authentication')) {
-        setAnalysis('Authentication failed. The API key is not properly configured for this deployment. Please contact the administrator to set up the Anthropic API key.');
+      
+      // More specific error handling
+      if (err.message.includes('401') || err.message.includes('authentication') || err.message.includes('invalid x-api-key')) {
+        setAnalysis('AI Analysis is not available: Authentication failed. This feature requires proper API key configuration in the deployment environment. The transcription service continues to work normally.');
         setApiKeyStatus('invalid');
       } else if (err.message.includes('network') || err.message.includes('fetch')) {
-        setAnalysis('Network error occurred. Please check your internet connection and try again.');
+        setAnalysis('AI Analysis temporarily unavailable due to network issues. Please try again later. Your transcription is complete and ready to use.');
+      } else if (err.message.includes('rate_limit')) {
+        setAnalysis('AI Analysis temporarily unavailable due to rate limits. Please try again in a few minutes. Your transcription is complete and ready to use.');
       } else {
-        setAnalysis(`Analysis failed: ${err.message}. Please try again later.`);
+        setAnalysis(`AI Analysis encountered an error: ${err.message}. Your transcription is complete and ready to use.`);
       }
     } finally {
       setAnalysisLoading(false);
@@ -157,7 +170,8 @@ Provide the response in structured format (JSON or bullet points).`;
       setResult(transcriptionResult);
       
       // Only attempt analysis if API key is valid and transcription was successful
-      if (transcriptionResult && transcriptionResult !== 'No result returned.' && apiKeyStatus === 'valid') {
+      // Don't auto-analyze in production to avoid unnecessary API calls
+      if (transcriptionResult && transcriptionResult !== 'No result returned.' && apiKeyStatus === 'valid' && !isProduction) {
         await analyzeTranscription(transcriptionResult);
       }
     } catch (err) {
@@ -200,7 +214,7 @@ Provide the response in structured format (JSON or bullet points).`;
             <div className="flex items-center space-x-3">
               <div className="w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
               <div>
-                <p className="text-gray-800 font-medium">Checking API Configuration...</p>
+                <p className="text-gray-800 font-medium">Checking AI Configuration...</p>
               </div>
             </div>
           </div>
@@ -214,9 +228,9 @@ Provide the response in structured format (JSON or bullet points).`;
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <p className="text-green-800 font-medium">AI Analysis Ready</p>
+                <p className="text-green-800 font-medium">AI Analysis Available</p>
                 <p className="text-green-700 text-sm mt-1">
-                  Anthropic API key is configured correctly. Click "Analyze" to get AI-powered insights.
+                  Click "Analyze" below to get AI-powered insights including topic modeling, key moments, and anomaly detection.
                 </p>
               </div>
             </div>
@@ -225,15 +239,15 @@ Provide the response in structured format (JSON or bullet points).`;
       
       case 'invalid':
         return (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <div className="flex items-center space-x-3">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <div>
-                <p className="text-red-800 font-medium">API Configuration Error</p>
-                <p className="text-red-700 text-sm mt-1">
-                  The API key is not properly configured for this deployment. Contact the administrator to enable AI analysis features.
+                <p className="text-yellow-800 font-medium">AI Analysis Unavailable</p>
+                <p className="text-yellow-700 text-sm mt-1">
+                  AI analysis features are not configured for this deployment. Your transcription works perfectly without this feature.
                 </p>
               </div>
             </div>
@@ -248,12 +262,11 @@ Provide the response in structured format (JSON or bullet points).`;
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <p className="text-blue-800 font-medium">AI Analysis Not Available</p>
+                <p className="text-blue-800 font-medium">AI Analysis Not Configured</p>
                 <p className="text-blue-700 text-sm mt-1">
-                  AI analysis features are not configured for this deployment. The transcription service will work normally, 
-                  but advanced AI analysis requires additional setup.
+                  AI analysis features are not available in this deployment. The core transcription service works perfectly and provides accurate text conversion.
                 </p>
-                {process.env.NODE_ENV === 'development' && (
+                {!isProduction && (
                   <div className="mt-3 p-3 bg-blue-100 rounded text-xs">
                     <p className="font-medium text-blue-800">For developers:</p>
                     <ol className="text-blue-700 mt-1 list-decimal list-inside">
