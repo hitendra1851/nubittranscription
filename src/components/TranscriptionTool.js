@@ -378,20 +378,24 @@ Provide the response in structured format (JSON or bullet points).`;
                   <pre className="text-gray-800 leading-relaxed whitespace-pre-wrap font-sans">{analysis}</pre>
                 </div>
               ) : (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') ? (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
                   <div className="flex items-center space-x-3">
-                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                      <p className="text-yellow-800 font-medium">API Key Required</p>
-                      <p className="text-yellow-700 text-sm mt-1">
-                        Please add your Anthropic API key to the <code className="bg-yellow-200 px-1 rounded">.env.local</code> file as <code className="bg-yellow-200 px-1 rounded">REACT_APP_ANTHROPIC_API_KEY</code> to enable AI analysis. 
-                        The analysis will provide topic modeling, key moments, and anomaly detection.
+                      <p className="text-blue-800 font-medium">Ready for AI Analysis</p>
+                      <p className="text-blue-700 text-sm mt-1">
+                        To enable AI-powered analysis, please add your Anthropic API key to the <code className="bg-blue-200 px-1 rounded">.env.local</code> file.
+                        The analysis will provide topic modeling, key moments identification, and anomaly detection.
                       </p>
-                      <div className="mt-3 p-3 bg-yellow-100 rounded text-xs">
-                        <p className="font-medium text-yellow-800">Example .env.local file:</p>
-                        <code className="text-yellow-700">REACT_APP_ANTHROPIC_API_KEY=sk-ant-api03-...</code>
+                      <div className="mt-3 p-3 bg-blue-100 rounded text-xs">
+                        <p className="font-medium text-blue-800">Steps to enable:</p>
+                        <ol className="text-blue-700 mt-1 list-decimal list-inside">
+                          <li>Get your API key from <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" className="underline">console.anthropic.com</a></li>
+                          <li>Replace "your_anthropic_api_key_here" in .env.local with your actual key</li>
+                          <li>Restart the development server</li>
+                        </ol>
                       </div>
                     </div>
                   </div>
