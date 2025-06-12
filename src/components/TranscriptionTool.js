@@ -52,7 +52,7 @@ const TranscriptionTool = () => {
 
   const analyzeTranscription = async (transcriptionText) => {
     if (!anthropicApiKey || anthropicApiKey === 'your_anthropic_api_key_here') {
-      setAnalysis('Please configure your Anthropic API key in the .env.local file to enable AI analysis.');
+      setAnalysis('Please add your Anthropic API key to the .env.local file as REACT_APP_ANTHROPIC_API_KEY to enable AI analysis.');
       return;
     }
 
@@ -386,9 +386,13 @@ Provide the response in structured format (JSON or bullet points).`;
                     <div>
                       <p className="text-yellow-800 font-medium">API Key Required</p>
                       <p className="text-yellow-700 text-sm mt-1">
-                        Please configure your Anthropic API key in the .env.local file to enable AI analysis. 
+                        Please add your Anthropic API key to the <code className="bg-yellow-200 px-1 rounded">.env.local</code> file as <code className="bg-yellow-200 px-1 rounded">REACT_APP_ANTHROPIC_API_KEY</code> to enable AI analysis. 
                         The analysis will provide topic modeling, key moments, and anomaly detection.
                       </p>
+                      <div className="mt-3 p-3 bg-yellow-100 rounded text-xs">
+                        <p className="font-medium text-yellow-800">Example .env.local file:</p>
+                        <code className="text-yellow-700">REACT_APP_ANTHROPIC_API_KEY=sk-ant-api03-...</code>
+                      </div>
                     </div>
                   </div>
                 </div>
