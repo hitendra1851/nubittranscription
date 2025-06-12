@@ -5,15 +5,19 @@ const TranscriptionTool = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
+  const [analysis, setAnalysis] = useState('');
   const [error, setError] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('transcript');
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
       setResult('');
+      setAnalysis('');
       setError(null);
     }
   };
@@ -25,6 +29,7 @@ const TranscriptionTool = () => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setFile(e.dataTransfer.files[0]);
       setResult('');
+      setAnalysis('');
       setError(null);
     }
   };
@@ -41,6 +46,37 @@ const TranscriptionTool = () => {
     setDragActive(false);
   };
 
+  const analyzeTranscription = async (transcriptionText) => {
+    try {
+      setAnalysisLoading(true);
+      
+      const prompt = `You are an AI assistant helping with transcription analysis.
+
+Below is a transcribed testimony:
+"""${transcriptionText}"""
+
+1. Categorize the content by subject matter (Topic Modeling)
+2. Highlight any key moments or significant statements
+3. Identify any anomalies or unusual patterns in the text
+
+Provide the response in structured format (JSON or bullet points).`;
+
+      // Note: In a real implementation, you would need to set up a backend endpoint
+      // that handles the Anthropic API call with your API key for security reasons
+      const response = await axios.post('/api/analyze', {
+        prompt: prompt,
+        text: transcriptionText
+      });
+
+      setAnalysis(response.data.analysis);
+    } catch (err) {
+      console.error('Analysis failed:', err);
+      setAnalysis('Analysis failed. Please try again or contact support.');
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
   const handleUpload = async () => {
     if (!file) return;
 
@@ -51,6 +87,7 @@ const TranscriptionTool = () => {
     try {
       setLoading(true);
       setResult('');
+      setAnalysis('');
       setError(null);
       setProgress(0);
 
@@ -77,7 +114,13 @@ const TranscriptionTool = () => {
 
       clearInterval(progressInterval);
       setProgress(100);
-      setResult(response.data.text || 'No result returned.');
+      const transcriptionResult = response.data.text || 'No result returned.';
+      setResult(transcriptionResult);
+      
+      // Automatically analyze the transcription
+      if (transcriptionResult && transcriptionResult !== 'No result returned.') {
+        await analyzeTranscription(transcriptionResult);
+      }
     } catch (err) {
       setError('Transcription failed. Please try again.');
       console.error(err);
@@ -87,16 +130,16 @@ const TranscriptionTool = () => {
     }
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(result);
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
     // You could add a toast notification here
   };
 
-  const downloadTxt = () => {
+  const downloadTxt = (content, filename) => {
     const element = document.createElement('a');
-    const file = new Blob([result], { type: 'text/plain' });
+    const file = new Blob([content], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
-    element.download = 'transcription.txt';
+    element.download = filename;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -204,37 +247,130 @@ const TranscriptionTool = () => {
       {/* Results Section */}
       {result && (
         <div className="bg-white rounded-2xl shadow-xl p-8">
+          {/* Tab Navigation */}
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold text-gray-900">Transcription Result</h3>
-            <div className="flex space-x-3">
+            <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
               <button
-                onClick={copyToClipboard}
-                className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                onClick={() => setActiveTab('transcript')}
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                  activeTab === 'transcript'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <span>Copy</span>
+                Transcript
               </button>
               <button
-                onClick={downloadTxt}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                onClick={() => setActiveTab('analysis')}
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                  activeTab === 'analysis'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Download</span>
+                AI Analysis
+                {analysisLoading && (
+                  <span className="ml-2 inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></span>
+                )}
               </button>
             </div>
           </div>
-          
-          <div className="bg-gray-50 rounded-lg p-6 max-h-96 overflow-y-auto">
-            <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{result}</p>
-          </div>
-          
-          <div className="mt-4 text-sm text-gray-500">
-            <p>Language: English • Words: {result.split(' ').length} • Characters: {result.length}</p>
-          </div>
+
+          {/* Transcript Tab */}
+          {activeTab === 'transcript' && (
+            <>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">Transcription Result</h3>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => copyToClipboard(result)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span>Copy</span>
+                  </button>
+                  <button
+                    onClick={() => downloadTxt(result, 'transcription.txt')}
+                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Download</span>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-6 max-h-96 overflow-y-auto">
+                <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{result}</p>
+              </div>
+              
+              <div className="mt-4 text-sm text-gray-500">
+                <p>Language: English • Words: {result.split(' ').length} • Characters: {result.length}</p>
+              </div>
+            </>
+          )}
+
+          {/* Analysis Tab */}
+          {activeTab === 'analysis' && (
+            <>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">AI Analysis</h3>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => copyToClipboard(analysis)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    disabled={!analysis || analysisLoading}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span>Copy</span>
+                  </button>
+                  <button
+                    onClick={() => downloadTxt(analysis, 'analysis.txt')}
+                    className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                    disabled={!analysis || analysisLoading}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Download</span>
+                  </button>
+                </div>
+              </div>
+
+              {analysisLoading ? (
+                <div className="bg-gray-50 rounded-lg p-6 text-center">
+                  <div className="inline-flex items-center space-x-3">
+                    <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-gray-600">Analyzing transcription...</span>
+                  </div>
+                </div>
+              ) : analysis ? (
+                <div className="bg-gray-50 rounded-lg p-6 max-h-96 overflow-y-auto">
+                  <pre className="text-gray-800 leading-relaxed whitespace-pre-wrap font-sans">{analysis}</pre>
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                  <div className="flex items-center space-x-3">
+                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <div>
+                      <p className="text-yellow-800 font-medium">Analysis Configuration Required</p>
+                      <p className="text-yellow-700 text-sm mt-1">
+                        To enable AI analysis, please configure the Anthropic API endpoint in your backend. 
+                        The analysis will provide topic modeling, key moments, and anomaly detection.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
     </div>
