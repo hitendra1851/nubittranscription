@@ -107,45 +107,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Meet Our Team</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <img 
-                src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop" 
-                alt="CEO"
-                className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-              />
-              <h3 className="text-xl font-semibold text-gray-900">Rajesh Kumar</h3>
-              <p className="text-blue-600 mb-2">CEO & Co-Founder</p>
-              <p className="text-gray-600 text-sm">Former AI researcher at Google, passionate about making AI accessible to everyone.</p>
-            </div>
-            <div className="text-center">
-              <img 
-                src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop" 
-                alt="CTO"
-                className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-              />
-              <h3 className="text-xl font-semibold text-gray-900">Priya Sharma</h3>
-              <p className="text-blue-600 mb-2">CTO & Co-Founder</p>
-              <p className="text-gray-600 text-sm">Machine learning expert with 10+ years in speech recognition and NLP.</p>
-            </div>
-            <div className="text-center">
-              <img 
-                src="https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop" 
-                alt="Head of Engineering"
-                className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-              />
-              <h3 className="text-xl font-semibold text-gray-900">David Chen</h3>
-              <p className="text-blue-600 mb-2">Head of Engineering</p>
-              <p className="text-gray-600 text-sm">Full-stack engineer focused on building scalable, secure infrastructure.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Contact CTA */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
